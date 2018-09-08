@@ -149,6 +149,9 @@ var missions = [
                 "selected_option": 0,
                 "fn_score": function (option) {
                     return option * 5
+                },
+                "fn_validate": function (option) {
+                    return option >= 0 && option <= 150
                 }
             },
             {
@@ -157,6 +160,9 @@ var missions = [
                 "selected_option": 0,
                 "fn_score": function (option) {
                     return option * 2
+                },
+                "fn_validate": function (option) {
+                    return option >= 0 && option <= 150
                 }
             }
         ]
