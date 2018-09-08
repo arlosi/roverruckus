@@ -1,0 +1,301 @@
+<!doctype html>
+<html>
+<head>
+    <title>FTC Relic Recovery Scoresheet</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type="text/css">
+@media screen and (min-width: 1200px) {
+    #content{ column-count: 2;}
+}
+
+@media screen and (min-width: 1600px) {
+    #content{ column-count: 3;}
+}
+
+body{
+    font-family: sans-serif;
+}
+
+p{
+    margin:0;
+}
+
+#header{
+    top:0;
+    right:0;
+    left:0;
+    position: fixed;
+    height: 30px;
+    background-color: #ddd;
+    padding: 5px 10px;
+}
+
+#header h1{
+    margin: 0;
+    font-size: 22px;
+}
+
+#headerright{
+    float:right;
+}
+
+#content{
+    margin-top: 50px;
+}
+
+#about{
+    text-align: center;
+    padding: 2em;
+    font-size: 0.8em;
+}
+
+.mission{
+    background-color: #fff;
+    border: 1px solid #aaa;
+    padding: 3px;
+    margin-bottom: 5px;
+    -webkit-column-break-inside: avoid;
+    page-break-inside: avoid;
+    break-inside: avoid;
+}
+
+.mission ul > li{
+    border: 1px solid #000;
+    display: inline-block;
+    cursor: pointer;
+    padding: 3px 3px;
+    margin: 2px;
+}
+
+.mission ul > li.selected{
+    background-color: lawngreen;
+}
+
+.mission ul, .mission input {
+    float: right;
+    margin: 0;
+    padding: 0 5px;
+}
+
+.mission > div > div {
+    min-height: 2em;
+    padding: 1px;
+    margin-top: 5px;
+}
+
+h2 {
+    margin: 0;
+}
+
+.score{
+    float: right;
+}
+
+.invalid{
+    background-color: #f55;
+}
+
+.note{
+    color: #090;
+}
+    </style>
+
+    <script>
+var missions = [
+    {
+        "title": "Autonomous",
+        "sections": [
+            {
+                "text": "Landing",
+                "options": [0, 1, 2],
+                "selected_option": 0,
+                "fn_score": function (option) {
+                    return option * 30
+                }
+            },
+            {
+                "text": "Sampling",
+                "options": [0, 1, 2],
+                "selected_option": 0,
+                "fn_score": function (option) {
+                    return option * 25
+                }
+            },
+            {
+                "text": "Claiming",
+                "options": [0, 1, 2],
+                "selected_option": 0,
+                "fn_score": function (option) {
+                    return option * 15
+                }
+            },
+            {
+                "text": "Parking",
+                "options": [0, 1, 2],
+                "selected_option": 0,
+                "fn_score": function (option) {
+                    return option * 10
+                }
+            },
+        ]
+    },
+    {
+        "title": "TeleOp",
+        "sections": [
+            {
+                "text": "Minerals in correct Lander",
+                "options": "number",
+                "selected_option": 0,
+                "fn_score": function (option) {
+                    return option * 5
+                }
+            },
+            {
+                "text": "Minerals in Depots",
+                "options": "number",
+                "selected_option": 0,
+                "fn_score": function (option) {
+                    return option * 2
+                }
+            }
+        ]
+    },
+    {
+        "title": "End Game",
+        "sections": [
+            {
+                "text": "Robot 2 Final Position",
+                "options": ["Other", "Partially in crater", "Fully in crater", "Hanging"],
+                "selected_option": 0,
+                "fn_score": function (option) {
+                    return [0, 15, 25, 50][option]
+                }
+            },
+            {
+                "text": "Robot 2 Final Position",
+                "options": ["Other", "Partially in crater", "Fully in crater", "Hanging"],
+                "selected_option": 0,
+                "fn_score": function (option) {
+                    return [0, 15, 25, 50][option]
+                }
+            },
+        ]
+    }
+]
+
+function getMission(name){
+    for(var mission_id in missions){
+        if (missions[mission_id].title == name) {
+            return missions[mission_id]
+        }
+    }
+}
+
+// Generate the page, based on the mission data.
+function load(){
+    var missions_element = document.getElementById("missions");
+    missions_element.innerHTML = ''
+
+    missions.points = 0
+    missions.forEach(function(mission){
+        var title_element = document.createElement("h2")
+        var score_element = document.createElement("span")
+        title_element.appendChild(score_element)
+        score_element.className = "score"
+        title_element.appendChild(document.createTextNode(mission.title))
+
+        var mission_element = document.createElement("div")
+        mission_element.className = "mission"
+        mission_element.appendChild(title_element);
+        sections_element = document.createElement("div")
+
+        mission.points = 0
+
+        mission.sections.forEach(function (section) {
+            var section_element = document.createElement("div")
+            var options_element
+
+            if (section.options == "number")
+            {
+                options_element = document.createElement("input")
+                options_element.value = section.selected_option
+                options_element.type = "number"
+                options_element.addEventListener("blur", function(){
+                    section.selected_option = this.value
+                    load()
+                })
+            } else {
+            	options_element = document.createElement("ul")
+	            for (var i = 0; i < section.options.length; i++) {
+	            	let index = i
+	                let option_element = document.createElement("li")
+	                let option = section.options[i]
+	                option_element.textContent = option
+	                if (section.selected_option == i) {
+	                    option_element.className = "selected"
+	                }
+
+	                option_element.addEventListener("click", function(){
+	                    section.selected_option = index
+	                    load()
+	                })
+
+	                options_element.appendChild(option_element)            	
+	            }
+	        }
+
+            section.points = section.fn_score(section.selected_option)
+            if (section.fn_validate != null) {
+                if (section.fn_validate(section.selected_option)) {
+                    section_element.className = ""
+                } else {
+                    section_element.className = "invalid"
+                    section.points = NaN
+                }
+            }
+
+            section_element.appendChild(options_element)
+
+            var text_element = document.createElement("p")
+            text_element.textContent = section.text
+            section_element.appendChild(text_element)
+            sections_element.appendChild(section_element)
+
+            mission.points += section.points
+        })
+        missions.points += mission.points
+        
+        score_element.textContent = mission.points
+        if (mission.notes != null) {
+            var notes_element = document.createElement("p")
+            notes_element.className = "note"
+            notes_element.textContent = mission.notes
+            mission_element.appendChild(notes_element)
+        }   
+        mission_element.appendChild(sections_element)
+        missions_element.appendChild(mission_element)
+    })
+
+    document.getElementById("totalscore").textContent = missions.points
+}
+    </script>
+</head>
+<body onload="load()">
+    <div id="header">
+        <h1><span style="color: #092e6b">Rover</span><span style="color: #890000">Ruckus</span><span id="headerright"><span id="totalscore">0</span> Pts</span></h1>
+    </div>
+    <div id="content">
+        <div id="missions"></div>
+    </div>
+    <div id="about">
+        <p>Created by Arlo Siemsen | Refresh to reset | Last updated September 8th, 2018.</p>
+        <p>
+            <a href="https://firstinspiresst01.blob.core.windows.net/ftc/2019/gefm1.pdf">Game Manuel Part 1</a> |
+            <a href="https://firstinspiresst01.blob.core.windows.net/ftc/2019/gemf2.pdf">Game Manuel Part 2</a> |
+            <a href="https://github.com/arlosi/roverruckus">Feedback and PRs</a>
+        </p>
+    </div>
+</body>
+</html>
+
